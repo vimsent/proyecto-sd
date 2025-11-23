@@ -8,7 +8,7 @@ import (
 	"os"
 	"sync"
 
-	pb "github.com/tu-usuario/proyecto-sd/api/reviews"
+	pb "github.com/vimsent/proyecto-sd/api/reviews"
 	"github.com/tu-usuario/proyecto-sd/pkg/domain"
 	"google.golang.org/grpc"
 )

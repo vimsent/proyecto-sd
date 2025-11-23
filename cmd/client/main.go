@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	pb "github.com/tu-usuario/proyecto-sd/api/reviews"
+	pb "github.com/vimsent/proyecto-sd/api/reviews"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

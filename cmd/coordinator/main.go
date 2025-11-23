@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	pb "github.com/tu-usuario/proyecto-sd/api/reviews"
-	"github.com/tu-usuario/proyecto-sd/pkg/domain"
+	pb "github.com/vimsent/proyecto-sd/api/reviews"
+	"github.com/vimsent/proyecto-sd/pkg/domain"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

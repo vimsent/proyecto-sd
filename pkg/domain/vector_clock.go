@@ -1,6 +1,6 @@
 package domain
 
-import "github.com/tu-usuario/proyecto-sd/api/reviews"
+import "github.com/vimsent/proyecto-sd/api/reviews"
 
 // IncrementClock aumenta el contador del nodo actual
 func IncrementClock(clock *reviews.VectorClock, nodeID string) {
