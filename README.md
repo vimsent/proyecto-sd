@@ -25,8 +25,9 @@ Antes de comenzar, asegúrate de tener instalado lo siguiente en tu sistema (o e
 ```bash
 sudo apt update
 sudo apt install -y golang-go make protobuf-compiler
+```
 
-Instalación de Plugins de Go para Protoc
+# Instalación de Plugins de Go para Protoc
 Es necesario instalar los generadores de código para Go y gRPC. Ejecuta:
 
 Bash
