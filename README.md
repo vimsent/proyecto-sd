@@ -1,142 +1,166 @@
-# Proyecto Sistemas Distribuidos: Plataforma de Micro-Reseñas
+## Proyecto Sistemas Distribuidos: Plataforma de Micro-Reseñas
+Este sistema implementa una arquitectura distribuida en Go utilizando gRPC. Soporta Consistencia Eventual entre nodos de datos y garantiza los modelos Read Your Writes y Monotonic Reads para el cliente.
 
-Integrantes: 
+# Requisitos Previos
+Asegúrate de tener instalado lo siguiente en tu entorno (o en cada máquina virtual):
 
--Vicente Luongo ROL 202073637-5 
+Go (Golang): Versión 1.19 o superior.
 
--Esteban ROL 
+Make: Para la automatización de tareas.
 
--Antonio ROL
-
-Este sistema implementa una arquitectura distribuida que soporta **Consistencia Eventual** (entre DataNodes) y los modelos **Read Your Writes / Monotonic Reads** (para el Cliente), desarrollado en Go utilizando gRPC.
-
----
-
-## 1. Requisitos Previos
-
-Antes de comenzar, asegúrate de tener instalado lo siguiente en tu sistema (o en cada Máquina Virtual):
-
-### Instalación de Go y Herramientas
-1.  **Go (Golang):** Versión 1.19 o superior.
-2.  **Make:** Para ejecutar los comandos de automatización.
-3.  **Compilador de Protocol Buffers (Protoc):**
-
-**En Ubuntu/Debian:**
-```bash
-sudo apt update
-sudo apt install -y golang-go make protobuf-compiler
-```
-
-# Instalación de Plugins de Go para Protoc
-Es necesario instalar los generadores de código para Go y gRPC. Ejecuta:
+Compilador Protocol Buffers (protoc):
 
 Bash
 
+# Ubuntu/Debian
+```
+sudo apt update && sudo apt install -y golang-go make protobuf-compiler
+
+```
+Plugins de Go para gRPC: 
+
+```
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-Nota: Asegúrate de que la ruta de instalación de Go esté en tu PATH. Agrega esto a tu ~/.bashrc si no te funcionan los comandos anteriores: export PATH=$PATH:$(go env GOPATH)/bin
+```
+Asegúrate de que $GOPATH/bin esté en tu $PATH.
 
-2. Descarga y Configuración Inicial
-Clonar/Descargar el repositorio y entrar en la carpeta.
-
-Descargar dependencias del proyecto:
+# 1. Configuración e Instalación
+Paso 1.1: Descargar dependencias
+En la raíz del proyecto, ejecuta:
 
 Bash
 
+```
 go mod tidy
-3. Configuración de Red (CRÍTICO)
-El sistema se configura a través del archivo Makefile. Debes elegir una de las dos modalidades de ejecución:
+```
+# Paso 1.2: Configurar IPs en el Makefile
+El archivo Makefile controla la configuración de red. Debes editarlo según tu entorno de ejecución.
 
-Opción A: Ejecución en una sola máquina (Localhost)
-Si quieres probar todo el sistema en tu propio computador:
+# Opción A: Modo Local (Una sola máquina) Si vas a probar todo en tu computador personal:
 
-Abre el archivo Makefile.
+Abre el Makefile.
 
-Busca la sección de configuración de IPs al inicio.
-
-Cambia TODAS las direcciones IP a 127.0.0.1.
+Busca la variable LOCAL_HOST (línea ~25) y asegúrate de que sea tu IP local o localhost:
 
 Makefile
+```
+LOCAL_HOST=127.0.0.1
+```
+Nota: El archivo original tiene 172.22.87.38, cámbialo si estás probando en tu propia máquina.
 
-# Ejemplo para Localhost
-VM1_IP=127.0.0.1
-VM2_IP=127.0.0.1
-VM3_IP=127.0.0.1
-VM_COORD_IP=127.0.0.1
-Opción B: Ejecución en Múltiples Máquinas Virtuales (Laboratorio)
-Si vas a desplegar cada nodo en una VM distinta:
 
-Obtén la IP de cada máquina (comando ip addr o ifconfig).
+# Opción B: Modo Distribuido (4 Máquinas Virtuales) Si tienes 4 máquinas (3 DataNodes + 1 Coordinador):
 
-Edita el archivo Makefile en todas las máquinas para que tengan la misma configuración.
+Abre el Makefile.
+
+Edita la sección "1. MODO DISTRIBUIDO" con las IPs reales de tus VMs:
 
 Makefile
+```
+VM1_IP=192.168.1.10  # IP para DataNode 1
+VM2_IP=192.168.1.11  # IP para DataNode 2
+VM3_IP=192.168.1.12  # IP para DataNode 3
+VM_COORD_IP=192.168.1.20 # IP para el Coordinador
+```
+# 2. Compilación
+Este paso genera los binarios en la carpeta bin/ y el código de gRPC en proto/. Ejecuta este comando (en todas las máquinas si es distribuido):
 
-# Ejemplo Distribuido (Reemplazar con IPs reales)
-VM1_IP=192.168.1.10  # IP de la máquina que correrá el DataNode 1
-VM2_IP=192.168.1.11  # IP de la máquina que correrá el DataNode 2
-VM3_IP=192.168.1.12  # IP de la máquina que correrá el DataNode 3
-VM_COORD_IP=192.168.1.13 # IP de la máquina que correrá el Coordinador
-4. Compilación
-Una vez configurado el Makefile, compila los binarios y genera el código gRPC. Este paso debe realizarse en todas las máquinas si estás en un entorno distribuido.
+Bash
+```
+make build
+```
+# 3. Ejecución
+Selecciona la guía según el modo que configuraste. El orden es importante: primero los DataNodes, luego el Coordinador, y al final el Cliente.
+
+# Guía para MODO LOCAL (1 Máquina)
+Necesitarás abrir 5 terminales diferentes en la raíz del proyecto.
+
+Terminal 1 (DataNode 1):
+
+Bash
+```
+make run-local-node-1
+```
+Terminal 2 (DataNode 2):
+
+Bash
+```
+make run-local-node-2
+```
+Terminal 3 (DataNode 3):
 
 Bash
 
-make build
-Esto generará los ejecutables en la carpeta /bin y los archivos .pb.go en /proto.
+```
+make run-local-node-3
+```
+Terminal 4 (Coordinador):
 
-5. Ejecución del Sistema
-El orden de ejecución es importante. Debes levantar primero los DataNodes y luego el Coordinador.
+Bash
+```
+make run-local-coord
+```
+Terminal 5 (Cliente):
 
-Paso 1: Levantar los DataNodes
-Abre 3 terminales distintas (o ve a cada VM correspondiente) y ejecuta:
+Bash
+```
+make run-local-client
+```
+Guía para MODO DISTRIBUIDO (4 VMs)
+Ejecuta el comando correspondiente en cada máquina virtual según su rol.
 
-Terminal/VM 1: make run-node-1
+En la Máquina 1 (DataNode 1):
 
-Terminal/VM 2: make run-node-2
+Bash
+```
+make run-dist-node-1
+En la Máquina 2 (DataNode 2):
+```
 
-Terminal/VM 3: make run-node-3
+Bash
+```
+make run-dist-node-2
+```
+En la Máquina 3 (DataNode 3):
 
-Paso 2: Levantar el Coordinador
-Una vez que los nodos de datos estén corriendo, inicia el coordinador:
+Bash
+```
+make run-dist-node-3
+```
+En la Máquina 4 (Coordinador): Asegúrate de que los DataNodes ya estén corriendo.
 
-Terminal/VM 4: make run-coord
+Bash
+```
+make run-dist-coord
+```
+Cliente (Cualquier máquina con acceso al Coordinador):
 
-Paso 3: Ejecutar el Cliente
-El cliente puede correr en cualquier terminal o máquina con acceso a la red del Coordinador:
-
-Terminal Cliente: make run-client
-
-6. Uso del Cliente
-Al iniciar el cliente verás un menú interactivo:
+Bash
+```
+make run-dist-client
+```
+4. Uso del Cliente
+Una vez iniciado el cliente, verás el siguiente menú:
 
 Escribir Reseña (Opción 1):
 
-Envía un texto al sistema.
+Envía una nueva reseña al sistema.
 
-Read Your Writes: El cliente guardará internamente la IP del nodo físico donde se guardó el dato.
+El cliente guarda internamente la IP del nodo que procesó la escritura ("Read Your Writes").
 
 Leer Reseña (Opción 2):
 
-Solicita la lectura de la reseña.
+Solicita leer la reseña.
 
-Read Your Writes: El sistema intentará leer del mismo nodo donde escribiste anteriormente para asegurar consistencia inmediata.
+Consistencia Read Your Writes: El coordinador intentará redirigir tu lectura al mismo nodo donde escribiste por última vez.
 
-Monotonic Reads: El cliente verificará que la versión del dato recibido no sea más antigua que la última que ha visto.
+Consistencia Monotonic Reads: El cliente verificará si la versión del dato (Reloj Vectorial) es posterior o igual a la última que vio. Si el dato es antiguo, mostrará una advertencia en los logs del servidor.
 
-Solución de Problemas Comunes
-Error protoc: command not found:
+Limpieza
+Para borrar los binarios y archivos generados por protobuf:
 
-No has instalado el compilador. Revisa el paso 1 "Requisitos Previos".
-
-Error protoc-gen-go: program not found:
-
-Faltan los plugins de Go o tu PATH no está configurado correctamente. Ejecuta export PATH=$PATH:$(go env GOPATH)/bin e intenta compilar de nuevo.
-
-Connection Refused / Context Deadline Exceeded:
-
-Verifica que las IPs en el Makefile sean correctas.
-
-Si usas varias VMs, asegúrate de que no haya un Firewall bloqueando los puertos (por defecto el sistema usa rangos 50050-50060).
-
-Prueba hacer ping entre las máquinas para verificar conectividad básica.
+Bash
+```
+make clean
+```
